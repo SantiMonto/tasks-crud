@@ -1,32 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
-use App\Http\Controllers\TaskController;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('tasks', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->boolean('status')->default(false);
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
+    }
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-Route::middleware(['auth'])->group(function () {
-    Route::redirect('settings', 'settings/profile');
-    Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
-    Volt::route('settings/password', 'settings.password')->name('settings.password');
-    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
-    
-    Volt::route('tasks', 'tasks')->name('tasks');
-    
-    Route::prefix('api')->group(function () {
-        Route::get('tasks', [TaskController::class, 'index']);
-        Route::post('tasks', [TaskController::class, 'store']);
-        Route::get('tasks/{id}', [TaskController::class, 'show']);
-        Route::put('tasks/{id}', [TaskController::class, 'update']);
-        Route::delete('tasks/{id}', [TaskController::class, 'destroy']);
-    });
-});
-
-require __DIR__.'/auth.php';
+    public function down()
+    {
+        Schema::dropIfExists('tasks');
+    }
+};
